@@ -258,7 +258,7 @@ public final class OpenSslClientContext extends OpenSslContext {
             success = true;
         } finally {
             if (!success) {
-                destroyPools();
+                destroy();
             }
         }
     }

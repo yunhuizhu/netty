@@ -159,6 +159,8 @@ public final class OpenSslEngine extends SSLEngine {
     private boolean isOutboundDone;
     private boolean engineClosed;
 
+    private OpenSslUnsafe unsafe;
+
     private final boolean clientMode;
     private final ByteBufAllocator alloc;
     private final OpenSslSessionContext sessionContext;
@@ -230,6 +232,24 @@ public final class OpenSslEngine extends SSLEngine {
 
     long ssl() {
         return ssl;
+    }
+
+    /**
+     * Returns the {@link OpenSslUnsafe} which allows to acces the {@code SSL} object for this {@link OpenSslEngine}.
+     * Be aware that it is freed as soon as the {@link #finalize()} or {@link #shutdown} method is called.
+     * At this point {@link OpenSslUnsafe#pointer()} will return {@code 0}.
+     */
+    public OpenSslUnsafe unsafe() {
+        OpenSslUnsafe unsafe = this.unsafe;
+        if (unsafe == null) {
+            this.unsafe = unsafe = new OpenSslUnsafe() {
+                @Override
+                public long pointer() {
+                    return ssl();
+                }
+            };
+        }
+        return unsafe;
     }
 
     /**
